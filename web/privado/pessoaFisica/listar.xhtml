@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/templates/template.xhtml">
+        <ui:define name="titulo">Manutenção de Pessoa Fisica</ui:define>
+        <ui:define name="conteudo">
+            <h:form id="formListagem">
+                <p:messages/>
+                <p:growl id="growl"/>
+                <p:commandButton value="Novo" actionListener="#{controlePessoaFisica.novo()}" icon="ui-icon-document"
+                                 oncomplete="PF('dlg').show();" update=":formEdicao"/>
+                <div align="center">
+                    <p:panelGrid columns="11">
+                        <p:outputLabel value="Ordem:"/>
+                        <p:selectOneMenu value="#{controlePessoaFisica.dao.ordem}">
+                            <f:selectItem itemLabel="ID" itemValue="id"/>
+                            <f:selectItem itemLabel="Nome" itemValue="nome"/>
+                            <f:selectItem itemLabel="Email" itemValue="email"/>
+                            <p:ajax update="listagem"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Filtro:"/>
+                        <p:inputText value="#{controlePessoaFisica.dao.filtro}">
+                            <p:ajax event="blur" update="listagem growl"/>
+                        </p:inputText>
+                        <p:commandButton value="Filtrar" update="listagem growl"
+                                         icon="ui-icon-search"/>
+                        <p:outputLabel value="Máximo de objetos:"/>
+                        <p:inputText value="#{controlePessoaFisica.dao.maximoObjetos}" size="3">
+                            <p:ajax event="keyup" update="listagem"/>
+                        </p:inputText>
+                        <p:commandButton value="Primeiro" actionListener="#{controlePessoaFisica.dao.primeiro()}"
+                                         update="listagem" icon="ui-icon-seek-first"/>
+                        <p:commandButton value="Anterior" actionListener="#{controlePessoaFisica.dao.anterior()}"
+                                         update="listagem" icon="ui-icon-seek-prev"/>                        
+                        <p:commandButton value="Proximo" actionListener="#{controlePessoaFisica.dao.proximo()}"
+                                         update="listagem" icon="ui-icon-seek-next"/>                        
+                        <p:commandButton value="Ultimo" actionListener="#{controlePessoaFisica.dao.ultimo()}"
+                                         update="listagem" icon="ui-icon-seek-end"/>                        
+                    </p:panelGrid>
+                </div>
+                <p:dataTable value="#{controlePessoaFisica.dao.listaObjetos}" var="obj"
+                             id="listagem">
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:outputLabel value="#{controlePessoaFisica.dao.mensagemNavegacao}"/>
+                        </div>
+                    </f:facet>
+                    <p:column headerText="ID">
+                        <p:outputLabel value="#{obj.id}"/>
+                    </p:column>
+                    <p:column headerText="Nome">                        
+                        <p:outputLabel value="#{obj.nome}"/>
+                    </p:column>
+                    <p:column headerText="Endereço">                        
+                        <p:outputLabel value="#{obj.endereco}"/>
+                    </p:column>
+                    <p:column headerText="Email">                        
+                        <p:outputLabel value="#{obj.email}"/>
+                    </p:column>
+                    <p:column headerText="Bairro">                        
+                        <p:outputLabel value="#{obj.bairro}"/>
+                    </p:column>
+                    <p:column headerText="Cep">                        
+                        <p:outputLabel value="#{obj.cep}"/>
+                    </p:column>
+                    <p:column headerText="Complemento">                        
+                        <p:outputLabel value="#{obj.complemento}"/>
+                    </p:column>     
+                    <p:column headerText="RG">                        
+                        <p:outputLabel value="#{obj.rg}"/>
+                    </p:column>
+                    <p:column headerText="CPF">                        
+                        <p:outputLabel value="#{obj.cpf}"/>
+                    </p:column>
+                    <p:column headerText="Nascimento">                        
+                        <p:outputLabel value="#{obj.nascimento}">
+                            <f:converter converterId="converterCalendar"/>
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Ações">
+                        <div align="center">
+                            <p:commandButton  icon="ui-icon-pencil" id="btnEditar"
+                                              actionListener="#{controlePessoaFisica.editar(obj.id)}" 
+                                              oncomplete="PF('dlg').show();" update=":formEdicao"/>
+                            <p:commandButton   icon="ui-icon-trash" id="btnExcluir"
+                                               actionListener="#{controlePessoaFisica.remover(obj.id)}"
+                                               onclick="if (!confirm('Confirma a exclusão'))
+                                                           return false" update="@form"
+                                               process="@form"/>       
+                            <p:tooltip for="btnEditar" value="Editar"/>
+                            <p:tooltip for="btnExcluir" value="Excluir"/>
+                        </div>
+                    </p:column>                   
+                </p:dataTable>
+            </h:form>            
+        </ui:define>
+        <ui:define name="dialogos">
+            <p:dialog widgetVar="dlg" header="Edição" modal="true" resizable="false">
+                <h:form id="formEdicao" prependId="false">
+                    <p:growl id="growl"/>
+                    <p:tabView id="tab">
+                        <p:tab title="Dados Principais">
+                            <div align="center">
+                                <p:panelGrid columns="2">
+                                    <f:facet name="footer">
+                                        <div align="center">
+                                            <p:commandButton value="Salvar" icon="ui-icon-disk"
+                                                             actionListener="#{controlePessoaFisica.salvar()}"
+                                                             oncomplete="if(!args.validationFailed){PF('dlg').hide();}"
+                                                             update=":formEdicao :formListagem"/>
+                                        </div>
+                                    </f:facet>
+                                    <p:outputLabel value="ID"/>
+                                    <p:inputText value="#{controlePessoaFisica.objeto.id}" readonly="true"/>
+
+                                    <p:outputLabel value="Nome" for="txtDescricao"/>
+                                    <p:inputText id="txtDescricao"
+                                                 value="#{controlePessoaFisica.objeto.nome}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="Endereço" for="txtEndereco"/>
+                                    <p:inputText id="txtEndereco"
+                                                 value="#{controlePessoaFisica.objeto.endereco}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="Email" for="txtEmail"/>
+                                    <p:inputText id="txtEmail"
+                                                 value="#{controlePessoaFisica.objeto.email}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="Bairro" for="txtBairro"/>
+                                    <p:inputText id="txtBairro"
+                                                 value="#{controlePessoaFisica.objeto.bairro}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="CEP" for="txtCep"/>
+                                    <p:inputText id="txtCep"
+                                                 value="#{controlePessoaFisica.objeto.cep}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="Complemento" for="txtComplemento"/>
+                                    <p:inputText id="txtComplemento"
+                                                 value="#{controlePessoaFisica.objeto.complemento}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="RG" for="txtRg"/>
+                                    <p:inputText id="txtRg"
+                                                 value="#{controlePessoaFisica.objeto.rg}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="CPF" for="txtCpf"/>
+                                    <p:inputText id="txtCpf"
+                                                 value="#{controlePessoaFisica.objeto.cpf}"
+                                                 size="40" maxlength="40"
+                                                 placeholder="Obrigatório"/>
+
+                                    <p:outputLabel value="Nascimento" for="txtNascimento"/>
+                                    <p:calendar id="txtNascimento" value="#{controlePessoaFisica.objeto.nascimento}"
+                                                pattern="dd/MM/yyyy" mask="true" locale="pt_BR"
+                                                navigator="true">
+                                        <f:converter converterId="converterCalendar"/>
+                                    </p:calendar>
+
+                                </p:panelGrid>
+                            </div>
+                        </p:tab>
+                        <p:tab title="Reservas">
+                            <p:dataTable value="#{controlePessoaFisica.objeto.reservam}"
+                                         var="res" rowIndexVar="idxRes" id="listaReservas">
+                                <f:facet name="header">
+                                    <p:panelGrid columns="2">
+                                        <p:selectOneMenu value="#{controlePessoaFisica.livros}"
+                                                         id="selectLivros">
+                                            <f:converter converterId="converterLivros"/>
+                                            <f:selectItem noSelectionOption="true"
+                                                          itemLabel="Selecione um registro"/>
+                                            <f:selectItems value="#{controlePessoaFisica.daoLivros.listaTodos}"
+                                                           var="p" itemLabel="#{p.titulo}"/>
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Adicionar"
+                                                         actionListener="#{controlePessoaFisica.adicionarReserva()}"
+                                                         update="listaReservas :formEdicao:growl"
+                                                         id="btnAdicionarReserva"
+                                                         process="btnAdicionarReserva selectLivros"
+                                                         icon="ui-icon-plus"/>
+
+                                    </p:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Livros">
+                                    <p:outputLabel value="#{res.titulo}"/>
+                                </p:column>                                    
+                                <p:column headerText="Ações">
+                                    <div align="center">
+                                        <p:commandButton id="btnRemoverReserva"
+                                                         actionListener="#{controlePessoaFisica.removerReserva(idxRes)}"
+                                                         process="btnRemoverReserva"
+                                                         update="listaReservas :formEdicao:growl"
+                                                         onclick="if (!confirm('Confirma a exclusão?'))
+                                                                     return false"
+                                                         icon="ui-icon-trash"/>
+                                    </div>
+                                </p:column>                                
+                            </p:dataTable>
+                        </p:tab>
+                    </p:tabView>
+                </h:form>
+                <ui:include src="/templates/ajaxstatus.xhtml"/>
+            </p:dialog>
+        </ui:define>
+    </ui:composition>    
+
+</html>
+
